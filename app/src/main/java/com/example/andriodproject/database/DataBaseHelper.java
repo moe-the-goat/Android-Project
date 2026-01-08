@@ -291,6 +291,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Get category name by ID
+     */
+    public String getCategoryNameById(long id) {
+        Category category = getCategoryById(id);
+        return category != null ? category.getName() : "Unknown";
+    }
+
+    /**
      * Update category
      */
     public boolean updateCategory(Category category) {
