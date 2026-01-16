@@ -121,8 +121,8 @@ public class SignupActivity extends AppCompatActivity {
         if (firstName.isEmpty()) {
             tilFirstName.setError("First name is required");
             isValid = false;
-        } else if (firstName.length() < 2) {
-            tilFirstName.setError("First name must be at least 2 characters");
+        } else if (firstName.length() < 3) {
+            tilFirstName.setError("First name must be at least 3 characters");
             isValid = false;
         }
 
@@ -130,8 +130,8 @@ public class SignupActivity extends AppCompatActivity {
         if (lastName.isEmpty()) {
             tilLastName.setError("Last name is required");
             isValid = false;
-        } else if (lastName.length() < 2) {
-            tilLastName.setError("Last name must be at least 2 characters");
+        } else if (lastName.length() < 3) {
+            tilLastName.setError("Last name must be at least 3 characters");
             isValid = false;
         }
 
