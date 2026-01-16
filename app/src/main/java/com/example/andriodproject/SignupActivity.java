@@ -18,10 +18,7 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.regex.Pattern;
 
-/**
- * SignupActivity - Handles user registration
- * Features: Form validation, Password requirements (6-12 chars with number, lowercase, uppercase)
- */
+// Handles user registration with form validation
 public class SignupActivity extends AppCompatActivity {
 
     private ImageButton btnBack;
@@ -52,9 +49,6 @@ public class SignupActivity extends AppCompatActivity {
         setClickListeners();
     }
 
-    /**
-     * Initialize all views
-     */
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         tilFirstName = findViewById(R.id.tilFirstName);
@@ -71,11 +65,7 @@ public class SignupActivity extends AppCompatActivity {
         tvLogin = findViewById(R.id.tvLogin);
     }
 
-    /**
-     * Set click listeners for buttons and links
-     */
     private void setClickListeners() {
-        // Back button click
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -83,7 +73,7 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
 
-        // Sign up button click
+        // Sign up
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,33 +81,25 @@ public class SignupActivity extends AppCompatActivity {
             }
         });
 
-        // Login link click - using explicit Intent
         tvLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish(); // Go back to login
+                finish();
             }
         });
     }
 
-    /**
-     * Attempt to sign up with provided details
-     */
     private void attemptSignUp() {
-        // Clear previous errors
         clearErrors();
 
-        // Get input values
         String firstName = etFirstName.getText().toString().trim();
         String lastName = etLastName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString();
         String confirmPassword = etConfirmPassword.getText().toString();
 
-        // Validate inputs
         boolean isValid = true;
 
-        // Validate first name
         if (firstName.isEmpty()) {
             tilFirstName.setError("First name is required");
             isValid = false;
@@ -126,7 +108,6 @@ public class SignupActivity extends AppCompatActivity {
             isValid = false;
         }
 
-        // Validate last name
         if (lastName.isEmpty()) {
             tilLastName.setError("Last name is required");
             isValid = false;
@@ -135,7 +116,6 @@ public class SignupActivity extends AppCompatActivity {
             isValid = false;
         }
 
-        // Validate email
         if (email.isEmpty()) {
             tilEmail.setError("Email is required");
             isValid = false;
@@ -147,7 +127,6 @@ public class SignupActivity extends AppCompatActivity {
             isValid = false;
         }
 
-        // Validate password
         if (password.isEmpty()) {
             tilPassword.setError("Password is required");
             isValid = false;
@@ -156,7 +135,6 @@ public class SignupActivity extends AppCompatActivity {
             isValid = false;
         }
 
-        // Validate confirm password
         if (confirmPassword.isEmpty()) {
             tilConfirmPassword.setError("Please confirm your password");
             isValid = false;
@@ -169,28 +147,20 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // Create user
         User user = new User(email, firstName, lastName, password);
         
         if (dbHelper.insertUser(user)) {
-            // Sign up successful
             Toast.makeText(this, "Account created successfully! Please login.", Toast.LENGTH_SHORT).show();
-            
-            // Go back to login with email pre-filled
             Intent intent = new Intent(SignupActivity.this, LoginActivity.class);
             intent.putExtra("email", email);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         } else {
-            // Sign up failed
             Toast.makeText(this, "Failed to create account. Please try again.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * Clear all error messages
-     */
     private void clearErrors() {
         tilFirstName.setError(null);
         tilLastName.setError(null);

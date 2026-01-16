@@ -4,10 +4,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.andriodproject.MainActivity;
 import com.example.andriodproject.R;
+import com.example.andriodproject.adapters.CategoryAdapter;
 import com.example.andriodproject.database.DataBaseHelper;
 import com.example.andriodproject.model.Category;
 import com.example.andriodproject.utils.SharedPrefManager;
@@ -27,11 +28,10 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * SettingsFragment - Handles app settings including theme, default period, and categories
- */
+// Handles app settings: theme, default period, category management
 public class SettingsFragment extends Fragment {
 
     private SwitchMaterial switchDarkMode;
@@ -71,10 +71,8 @@ public class SettingsFragment extends Fragment {
     }
 
     private void loadSettings() {
-        // Load dark mode setting
         switchDarkMode.setChecked(sharedPrefManager.isDarkModeEnabled());
 
-        // Load default period setting
         String period = sharedPrefManager.getDefaultPeriod();
         switch (period) {
             case "daily":
@@ -114,13 +112,8 @@ public class SettingsFragment extends Fragment {
             Toast.makeText(requireContext(), "Default period updated", Toast.LENGTH_SHORT).show();
         });
 
-        // Add income category
         layoutAddIncomeCategory.setOnClickListener(v -> showAddCategoryDialog("INCOME"));
-
-        // Add expense category
         layoutAddExpenseCategory.setOnClickListener(v -> showAddCategoryDialog("EXPENSE"));
-
-        // Manage categories
         layoutManageCategories.setOnClickListener(v -> showManageCategoriesDialog());
     }
 
@@ -163,44 +156,102 @@ public class SettingsFragment extends Fragment {
     }
 
     private void showManageCategoriesDialog() {
-        // Get user's custom categories
-        List<Category> incomeCategories = dbHelper.getCategoriesByType("INCOME", userEmail);
-        List<Category> expenseCategories = dbHelper.getCategoriesByType("EXPENSE", userEmail);
-
-        // Filter to show only custom (user-created) categories
-        StringBuilder message = new StringBuilder();
-        message.append("Custom Income Categories:\n");
+        // Get user's custom categories only
+        List<Category> allCustomCategories = new ArrayList<>();
         
-        int customIncomeCount = 0;
-        for (Category c : incomeCategories) {
-            if (c.getUserEmail() != null) {
-                message.append("• ").append(c.getName()).append("\n");
-                customIncomeCount++;
-            }
+        for (Category c : dbHelper.getCategoriesByType("INCOME", userEmail)) {
+            if (c.getUserEmail() != null) allCustomCategories.add(c);
         }
-        if (customIncomeCount == 0) {
-            message.append("None\n");
+        for (Category c : dbHelper.getCategoriesByType("EXPENSE", userEmail)) {
+            if (c.getUserEmail() != null) allCustomCategories.add(c);
         }
 
-        message.append("\nCustom Expense Categories:\n");
-        
-        int customExpenseCount = 0;
-        for (Category c : expenseCategories) {
-            if (c.getUserEmail() != null) {
-                message.append("• ").append(c.getName()).append("\n");
-                customExpenseCount++;
-            }
-        }
-        if (customExpenseCount == 0) {
-            message.append("None\n");
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_manage_categories, null);
+        RecyclerView rvCategories = dialogView.findViewById(R.id.rvCategories);
+        TextView tvNoCategories = dialogView.findViewById(R.id.tvNoCategories);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle("Manage Categories")
+                .setView(dialogView)
+                .setPositiveButton("Close", null)
+                .create();
+
+        if (allCustomCategories.isEmpty()) {
+            tvNoCategories.setVisibility(View.VISIBLE);
+            rvCategories.setVisibility(View.GONE);
+        } else {
+            tvNoCategories.setVisibility(View.GONE);
+            rvCategories.setVisibility(View.VISIBLE);
+
+            CategoryAdapter adapter = new CategoryAdapter(requireContext(), allCustomCategories);
+            rvCategories.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rvCategories.setAdapter(adapter);
+
+            adapter.setOnCategoryActionListener(new CategoryAdapter.OnCategoryActionListener() {
+                @Override
+                public void onEditClick(Category category) {
+                    dialog.dismiss();
+                    showEditCategoryDialog(category);
+                }
+
+                @Override
+                public void onDeleteClick(Category category) {
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Delete Category")
+                            .setMessage("Delete \"" + category.getName() + "\"?")
+                            .setPositiveButton("Delete", (d, w) -> {
+                                if (dbHelper.deleteCategory(category.getId())) {
+                                    Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
+                                    dialog.dismiss();
+                                    showManageCategoriesDialog(); // Refresh
+                                } else {
+                                    Toast.makeText(requireContext(), "Failed to delete", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                }
+            });
         }
 
-        message.append("\nNote: Long press on a custom category in the transaction screen to delete it.");
+        dialog.show();
+    }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Custom Categories")
-                .setMessage(message.toString())
-                .setPositiveButton("OK", null)
-                .show();
+    private void showEditCategoryDialog(Category category) {
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_add_category, null);
+        TextInputLayout tilCategoryName = dialogView.findViewById(R.id.tilCategoryName);
+        TextInputEditText etCategoryName = dialogView.findViewById(R.id.etCategoryName);
+        etCategoryName.setText(category.getName());
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle("Rename Category")
+                .setView(dialogView)
+                .setPositiveButton("Save", null)
+                .setNegativeButton("Cancel", null)
+                .create();
+
+        dialog.setOnShowListener(dialogInterface -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                String newName = etCategoryName.getText().toString().trim();
+
+                if (newName.isEmpty()) {
+                    tilCategoryName.setError("Name is required");
+                    return;
+                }
+
+                category.setName(newName);
+                if (dbHelper.updateCategory(category)) {
+                    Toast.makeText(requireContext(), "Category updated", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    showManageCategoriesDialog(); // Refresh list
+                } else {
+                    Toast.makeText(requireContext(), "Failed to update", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        dialog.show();
     }
 }

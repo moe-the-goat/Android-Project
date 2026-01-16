@@ -22,9 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * TransactionAdapter - RecyclerView adapter for displaying transactions
- */
+// Adapter for displaying transactions in a RecyclerView
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
 
     private Context context;

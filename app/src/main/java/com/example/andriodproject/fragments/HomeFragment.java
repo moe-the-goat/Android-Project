@@ -50,9 +50,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * HomeFragment - Dashboard showing financial summary, balance, recent transactions
- */
+// Dashboard showing financial summary, charts, and recent transactions
 public class HomeFragment extends Fragment {
 
     private TextView tvBalance, tvTotalIncome, tvTotalExpense;

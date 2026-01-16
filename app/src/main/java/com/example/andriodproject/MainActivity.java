@@ -1,5 +1,6 @@
 package com.example.andriodproject;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -47,19 +48,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Initialize shared preferences and apply theme
         sharedPrefManager = SharedPrefManager.getInstance(this);
         applyTheme();
         
         setContentView(R.layout.activity_main);
 
-        // Initialize database
         dbHelper = new DataBaseHelper(this);
 
-        // Get current user email
         currentUserEmail = sharedPrefManager.getUserEmail();
         
-        // Check if user is logged in
         if (currentUserEmail == null) {
             navigateToLogin();
             return;
@@ -206,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         finish();
     }
 
+    @SuppressLint("GestureBackNavigation")
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {

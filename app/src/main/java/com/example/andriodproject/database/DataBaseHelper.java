@@ -14,10 +14,6 @@ import com.example.andriodproject.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DatabaseHelper class that extends SQLiteOpenHelper for managing the SQLite database.
- * This class handles all database operations for Users, Transactions, Categories, and Budgets.
- */
 public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "FinanceManager.db";
