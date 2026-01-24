@@ -306,13 +306,38 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return rowsAffected > 0;
     }
 
-    /**
-     * Delete category (only user-created categories can be deleted)
-     */
+    // Delete category and all related transactions and budgets
     public boolean deleteCategory(long categoryId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        int rowsAffected = db.delete(TABLE_CATEGORY, CAT_ID + " = ? AND " + CAT_USER_EMAIL + " IS NOT NULL", 
-                                     new String[]{String.valueOf(categoryId)});
+        
+        // Check if it's a user-created category
+        Cursor cursor = db.rawQuery("SELECT " + CAT_USER_EMAIL + " FROM " + TABLE_CATEGORY + 
+                " WHERE " + CAT_ID + " = ?", new String[]{String.valueOf(categoryId)});
+        
+        if (cursor.moveToFirst()) {
+            int emailIndex = cursor.getColumnIndexOrThrow(CAT_USER_EMAIL);
+            if (cursor.isNull(emailIndex)) {
+                cursor.close();
+                return false; // Can't delete default categories
+            }
+        } else {
+            cursor.close();
+            return false; // Category not found
+        }
+        cursor.close();
+
+        // Delete related transactions
+        db.delete(TABLE_TRANSACTION, TRANS_CATEGORY_ID + " = ?", 
+                new String[]{String.valueOf(categoryId)});
+
+        // Delete related budgets
+        db.delete(TABLE_BUDGET, BUDGET_CATEGORY_ID + " = ?", 
+                new String[]{String.valueOf(categoryId)});
+
+        // Delete the category
+        int rowsAffected = db.delete(TABLE_CATEGORY, CAT_ID + " = ?", 
+                new String[]{String.valueOf(categoryId)});
+        
         return rowsAffected > 0;
     }
 

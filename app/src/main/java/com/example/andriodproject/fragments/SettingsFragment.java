@@ -199,10 +199,10 @@ public class SettingsFragment extends Fragment {
                 public void onDeleteClick(Category category) {
                     new AlertDialog.Builder(requireContext())
                             .setTitle("Delete Category")
-                            .setMessage("Delete \"" + category.getName() + "\"?")
+                            .setMessage("Delete \"" + category.getName() + "\"?\n\nThis will also delete all transactions and budgets using this category.")
                             .setPositiveButton("Delete", (d, w) -> {
                                 if (dbHelper.deleteCategory(category.getId())) {
-                                    Toast.makeText(requireContext(), "Category deleted", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(requireContext(), "Category and related data deleted", Toast.LENGTH_SHORT).show();
                                     dialog.dismiss();
                                     showManageCategoriesDialog(); // Refresh
                                 } else {
