@@ -1,7 +1,5 @@
 # Personal Finance Manager
 
-![App UI Preview](App%20UI%20Preview.png)
-
 A comprehensive Android application designed to help users take control of their personal finances. This app provides intuitive tools for tracking income and expenses, setting budgets, and visualizing financial data through interactive charts and detailed reports.
 
 ## Overview
